@@ -244,6 +244,33 @@ describe("BacktestPriceFeed", () => {
   });
 });
 
+describe("BacktestPriceFeed.getAvailableRange", () => {
+  it("returns the first and last timestamp of an asset's series", () => {
+    const feed = BacktestPriceFeed.create({
+      USDC: [
+        { timestamp: BASE_TIMESTAMP + 7200_000, price: "1.0002000" },
+        { timestamp: BASE_TIMESTAMP, price: "1.0000000" },
+      ],
+      EURC: [],
+    });
+
+    expect(feed.getAvailableRange(USDC)).toEqual({
+      min: BASE_TIMESTAMP,
+      max: BASE_TIMESTAMP + 7200_000,
+    });
+  });
+
+  it("returns null for an asset with no data points", () => {
+    const feed = BacktestPriceFeed.create({ USDC: [], EURC: [] });
+    expect(feed.getAvailableRange(USDC)).toBeNull();
+  });
+
+  it("returns null for an asset that is not registered", () => {
+    const feed = new BacktestPriceFeed(new Map([[USDC, []]]));
+    expect(feed.getAvailableRange(EURC)).toBeNull();
+  });
+});
+
 describe("PriceFeed contract tests - multiple implementations", () => {
   function runBaseContractTests(feed: PriceFeed, name: string) {
     describe(`${name} base contract`, () => {
